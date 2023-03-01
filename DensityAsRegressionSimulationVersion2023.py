@@ -14,7 +14,14 @@ from sklearn.model_selection import GridSearchCV
 ####################
 #REMARKS AT THE START
 ####################
-
+#For the article, the code has been run using:
+#Python 3.9.5
+#Numpy version 1.20.3
+#Pandas version 1.2.4
+#SciPy version 1.6.3
+#scikit-learn version 1.2.0
+#TensorFlow version 2.6.0 including Keras 2.6.0, built with cuDNN 8.2.1.32 and CUDA 11.3.1
+#TensorFlow-model-optimization 0.7.3
 
 ####################
 #BROWNIAN MOTION RELATED FUNCTIONS
