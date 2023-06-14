@@ -27,30 +27,30 @@ from sklearn.model_selection import GridSearchCV
 #BROWNIAN MOTION RELATED FUNCTIONS
 ####################
 
-### Geometric Brownian Motion generation
+### Geometric Brownian Motion generation.
 def GBMPathGeneration(Steps, initial, Seed):
     """
-    Function to create an approximate Geometric Brownian Motion path
+    Function to create an approximate Geometric Brownian Motion path.
     """
-    rng=random.default_rng(Seed) #Create the (seeded) random generator
-    Stepsize = 1/Steps #Calculate the stepsize
-    #Calculate the Brownian motion path
-    y = norm.rvs(scale= sqrt(Stepsize), size = Steps, random_state = rng) #Draw the required number of normal random variables
-    y = insert(arr = y, obj= 0 , values =initial ) #Add the initial value
+    rng=random.default_rng(Seed) #Create the (seeded) random generator.
+    Stepsize = 1/Steps #Calculate the stepsize.
+    #Calculate the Brownian motion path.
+    y = norm.rvs(scale= sqrt(Stepsize), size = Steps, random_state = rng) #Draw the required number of normal random variables.
+    y = insert(arr = y, obj= 0 , values =initial ) #Add the initial value.
     z = cumsum(y)
     gbm = exp(z)
     return(gbm)
 
-### Calculate the values in the step-points of the function x(1-x) exp(W(x)) where W is the Brownian motion (so exp(W) is the Geometric BM)
+### Calculate the values in the step-points of the function x(1-x) exp(W(x)) where W is the Brownian motion (so exp(W) is the Geometric BM).
 def GBMNormalizedBoundaryVariationDensity(GBMPath, Steps):
     """
-    Function to multiply the Geometric Brownian Motion path with a (scaled) version of x(1-x) so it satisfies the boundary conditions. Furthermore it creates a linear interpolation and normalizes the resulting function so it becomes a density
+    Function to multiply the Geometric Brownian Motion path with a (scaled) version of x(1-x) so it satisfies the boundary conditions. Furthermore it creates a linear interpolation and normalizes the resulting function so it becomes a density.
     """
     GBMbv= zeros(Steps+1)
     for i in range (0,Steps+1):
         GBMbv[i] = GBMPath[i]*(i/Steps)*(1-i/Steps)
     t = linspace(0.0,1, Steps+1)
-    I = sum(diff(t)*(GBMbv[:-1]+diff(GBMbv)/2)) #We use the fact that after linear interpolation our function is piecewise linear, so we can directly compute the value of the integral on each piece)
+    I = sum(diff(t)*(GBMbv[:-1]+diff(GBMbv)/2)) #We use the fact that after linear interpolation our function is piecewise linear, so we can directly compute the value of the integral on each piece).
     print(I)
     z = GBMbv/I
     f = interpolate.interp1d(t, z)
@@ -62,16 +62,16 @@ def GBMNormalizedConcentratedVariationDensity(GBMPath, Steps):
     """
     Variation of GBMNormalizedBoundaryVariationDensity that concentrates the function on 3/4-th of the interval. Basis for the shifting conditional density.
     """
-    Stepsize = 3/(4*Steps) #Calculate the stepsize, the factor 3/4 is because we want to concentrate the function on [0,3/4]
+    Stepsize = 3/(4*Steps) #Calculate the stepsize, the factor 3/4 is because we want to concentrate the function on [0,3/4].
     GBMncv= zeros(Steps+1)
     for i in range (0,Steps+1):
         GBMncv[i] = GBMPath[i]*((4/3)*i*Stepsize)*(1-(4/3)*i*Stepsize)
     t = linspace(0.0, 3/4, Steps+1)
     I = sum(diff(t)*(GBMncv[:-1]+diff(GBMncv)/2))
-    t = append(t,1) #Add the point 1 at the end to extend interpolation to [0,1]
+    t = append(t,1) #Add the point 1 at the end to extend interpolation to [0,1].
     z = GBMncv/I
-    z = append(z,0) #Add the functionvalue 0 to the point 1
-    f = interpolate.interp1d(t,z) #Create an interpolation function
+    z = append(z,0) #Add the functionvalue 0 to the point 1.
+    f = interpolate.interp1d(t,z) #Create an interpolation function.
     w = f(t)
     print(sum(diff(t)*(w[:-1]+diff(w)/2)) )
     return f
@@ -94,14 +94,14 @@ def GBMNormalizedMarginal(NumberOfPoints, Seed1, Seed2, f, Bound):
     """
     Rejection sampling function that samples from an 1-d density function f.
     """
-    rng=random.default_rng(Seed1) #Create the (seeded) random generator
-    rng2=random.default_rng(Seed2) #Create a second (seeded) random generator
+    rng=random.default_rng(Seed1) #Create the (seeded) random generator.
+    rng2=random.default_rng(Seed2) #Create a second (seeded) random generator.
     i=0
     X = pd.DataFrame(columns=['X'], dtype='float64')
     while i < NumberOfPoints:
-        T = rng.random(1) #Draw sample from the uniform distribution on [0,1)
+        T = rng.random(1) #Draw sample from the uniform distribution on [0,1).
         
-        A = rng2.random(1) #Draw sample from the uniform distribution on [0,1)
+        A = rng2.random(1) #Draw sample from the uniform distribution on [0,1).
         if Bound*A<=f(T):
             AidFrame = pd.DataFrame({"X": T})
             X = pd.concat([X,AidFrame], ignore_index = True, axis=0 )
@@ -113,7 +113,7 @@ def GBMNormalizedMarginal(NumberOfPoints, Seed1, Seed2, f, Bound):
 #MARGINAL DENSITY FUNCTIONS
 ####################
 
-#Density with smoothness 1/2 to be used with the copula model
+#Density with smoothness 1/2 to be used with the copula model.
 
 def CopulaMarginalDensity(x,dimension):
     """
@@ -161,8 +161,8 @@ def NearUnifDensity(dimension):
 ####################
 
 def Uniform(NumberOfPoints, Seed):
-    rng=random.default_rng(Seed) #Create the (seeded) random generator
-    X= rng.random(NumberOfPoints)   #Draw NumberOfPoints Samples from the uniform distribution on [0,1)
+    rng=random.default_rng(Seed) #Create the (seeded) random generator.
+    X= rng.random(NumberOfPoints)   #Draw NumberOfPoints Samples from the uniform distribution on [0,1).
     MarginalData = pd.DataFrame({"X": X[:]})
     return MarginalData
 
@@ -172,13 +172,13 @@ def Uniform(NumberOfPoints, Seed):
 
 def GBMMixingConditionalDensity(f,x, ConditionalValue):
     """
-    Conditional density where the value of the conditional variable determines the weight assigned to f(x) or its mirrored version f(1-x)
+    Conditional density where the value of the conditional variable determines the weight assigned to f(x) or its mirrored version f(1-x).
     """
     return (1.0-ConditionalValue)*f(x)+(ConditionalValue)*f(1-x) 
 
 def GBMShiftingConditionalDensity(f, x, ConditionalValue):
     """
-    Condition density where the conditional variabel determines the location of the function f on the interval. Only to be used in combination with the concentrated densities f
+    Condition density where the conditional variabel determines the location of the function f on the interval. Only to be used in combination with the concentrated densities f.
     """
     y = max(x-ConditionalValue/4,0)
     return f(y)
@@ -190,15 +190,15 @@ def GBMShiftingConditionalDensity(f, x, ConditionalValue):
 
 def GBMMixingConditional(NumberOfPoints, ConditionalValues, Seed1, Seed2, f, Bound): 
     """
-    Function to do rejection sampling from the mixing conditional density
+    Function to do rejection sampling from the mixing conditional density.
     """
-    rng=random.default_rng(Seed1) #Create the (seeded) random generator
-    rng2=random.default_rng(Seed2) #Create a second (seeded) random generator
+    rng=random.default_rng(Seed1) #Create the (seeded) random generator.
+    rng2=random.default_rng(Seed2) #Create a second (seeded) random generator.
     i=0
     X = pd.DataFrame(columns=['X'], dtype='float64')
     while i < NumberOfPoints:
-        T = rng.random(1) #Draw sample from the uniform distribution on [0,1)
-        A = rng2.random(1) #Draw sample from the uniform distribution on [0,1)
+        T = rng.random(1) #Draw sample from the uniform distribution on [0,1).
+        A = rng2.random(1) #Draw sample from the uniform distribution on [0,1).
         Aid = GBMMixingConditionalDensity(f,T, ConditionalValues.iloc[i,0], )
         if Bound*A<= Aid:
             AidFrame = pd.DataFrame({"X": T})
@@ -208,15 +208,15 @@ def GBMMixingConditional(NumberOfPoints, ConditionalValues, Seed1, Seed2, f, Bou
 
 def GBMShiftingConditional(NumberOfPoints, ConditionalValues, Seed1, Seed2, f, Bound): 
     """
-    Function to do rejection sampling from the shifting conditional density
+    Function to do rejection sampling from the shifting conditional density.
     """
-    rng=random.default_rng(Seed1) #Create the (seeded) random generator
-    rng2=random.default_rng(Seed2) #Create a second (seeded) random generator
+    rng=random.default_rng(Seed1) #Create the (seeded) random generator.
+    rng2=random.default_rng(Seed2) #Create a second (seeded) random generator.
     i=0
     X = pd.DataFrame(columns=['X'], dtype='float64')
     while i < NumberOfPoints:
-        T = rng.random(1) #Draw sample from the uniform distribution on [0,1)
-        A = rng2.random(1) #Draw sample from the uniform distribution on [0,1)
+        T = rng.random(1) #Draw sample from the uniform distribution on [0,1).
+        A = rng2.random(1) #Draw sample from the uniform distribution on [0,1).
         Aid = GBMShiftingConditionalDensity(f,T,ConditionalValues.iloc[i,0])
         if Bound*A<= Aid:
             AidFrame = pd.DataFrame({"X": T})
@@ -238,7 +238,7 @@ def NaiveBayesGBMDensity(NumberOfPoints, Dimension ,ChildSeeds, Test: bool, Simu
     Function to create data for the Naive Bayes model.
     """
     if Init:
-        index = int(2400+SimulationNumber*100) #Goal of index is to ensure that we generate a different data sample for each simulationnumber, while still being reproducible
+        index = int(2400+SimulationNumber*100) #Goal of index is to ensure that we generate a different data sample for each simulationnumber, while still being reproducible.
     elif Test:
         index = int(1900+SimulationNumber*100)
     else:
@@ -255,12 +255,12 @@ def NaiveBayesGBMDensity(NumberOfPoints, Dimension ,ChildSeeds, Test: bool, Simu
             Z = pd.concat([Z,Y], axis=1, join="inner")
     elif ConditionalModel == 'Shifting':
         if Dimension >= 2:
-            Y =  GBMMixingConditional(NumberOfPoints, X, ChildSeeds[index+2], ChildSeeds[index+3], f[1], Bound[1]) #The second dimension is always a near uniform density for which shifting does not make sense
+            Y =  GBMMixingConditional(NumberOfPoints, X, ChildSeeds[index+2], ChildSeeds[index+3], f[1], Bound[1]) #The second dimension is always a near uniform density for which shifting does not make sense.
             Z = pd.concat([X,Y], axis=1, join="inner")
         else:
             Z = X
-        for d in range(2,Dimension): #Start at 2 since we already did the first two
-            if d%3 > 0: #Only use the shifting conditional if the marginal is based on the concentrated GBM
+        for d in range(2,Dimension): #Start at 2 since we already did the first two.
+            if d%3 > 0: #Only use the shifting conditional if the marginal is based on the concentrated GBM.
                 Y = GBMMixingConditional(NumberOfPoints, X, ChildSeeds[index+2*d], ChildSeeds[index+1+2*d], f[d], Bound[d])
             else:
                 Y = GBMShiftingConditional(NumberOfPoints, X, ChildSeeds[index+2*d], ChildSeeds[index+1+2*d], f[d], Bound[d])
@@ -280,7 +280,7 @@ def NaiveBayesGBMTrueValues(Datapoints: pd.DataFrame, NumberOfPoints, Dimension,
             Z[i] = Aid
         elif ConditionalModel == 'Shifting':
             for j in range(1, Dimension):
-                if j%3 > 0: #Only use the shifting conditional if the marginal is based on the concentrated GBM
+                if j%3 > 0: #Only use the shifting conditional if the marginal is based on the concentrated GBM.
                     Aid = Aid*GBMMixingConditionalDensity(f[j],Datapoints.iloc[i,j],Datapoints.iloc[i,0])
                 else:
                     Aid = Aid*GBMShiftingConditionalDensity(f[j],Datapoints.iloc[i,j],Datapoints.iloc[i,0])
@@ -291,7 +291,7 @@ def NaiveBayesGBMTrueValues(Datapoints: pd.DataFrame, NumberOfPoints, Dimension,
 #####
 #'BayesBinaryTree'
 #####
-#Bayesian network in binary tree form
+#Bayesian network in binary tree form.
 
 def BayesBinaryTreeDensity(NumberOfPoints, Dimension ,ChildSeeds, Test: bool, SimulationNumber, f, Init: bool, Bound, ConditionalModel):
     """
@@ -317,14 +317,14 @@ def BayesBinaryTreeDensity(NumberOfPoints, Dimension ,ChildSeeds, Test: bool, Si
             Z = pd.concat([Z,Y], axis=1, join="inner")
     elif ConditionalModel == 'Shifting':
         if Dimension >= 2:
-            Y =  GBMMixingConditional(NumberOfPoints, X, ChildSeeds[index+2], ChildSeeds[index+3], f[1], Bound[1])#The second dimension is always a near uniform density for which shifting does not make sense
+            Y =  GBMMixingConditional(NumberOfPoints, X, ChildSeeds[index+2], ChildSeeds[index+3], f[1], Bound[1])#The second dimension is always a near uniform density for which shifting does not make sense.
             Z = pd.concat([X,Y], axis=1, join="inner")
         else:
             Z = X
         for d in range(2,Dimension):
             Cond = Z.iloc[:,int(floor((d-1)/2))]
             Cond = Cond.to_frame()
-            if d%3 > 0: #Only use the shifting conditional if the marginal is based on the concentrated GBM
+            if d%3 > 0: #Only use the shifting conditional if the marginal is based on the concentrated GBM.
                 Y = GBMMixingConditional(NumberOfPoints, Cond, ChildSeeds[index+2*d], ChildSeeds[index+1+2*d],  f[d], Bound[d])
             else:
                 Y = GBMShiftingConditional(NumberOfPoints, Cond, ChildSeeds[index+2*d], ChildSeeds[index+1+2*d],  f[d], Bound[d])
@@ -354,7 +354,7 @@ def BayesBinaryTreeTrueValues(Datapoints: pd.DataFrame, NumberOfPoints, Dimensio
 #####
 #'Copula'
 #####
-#Vine Copula Based model using the Farlie-Gumbel-Morgnestern Copula (family) 
+#Vine Copula Based model using the Farlie-Gumbel-Morgnestern Copula (family).
 
 def CopulaDensityFunction(X, Dimension, parameter):
     """
@@ -381,16 +381,16 @@ def CopulaDensity(NumberOfPoints, Dimension ,ChildSeeds, Test: bool, SimulationN
         index = int(900+SimulationNumber*100)
     else:
         index = int(950+SimulationNumber*100)
-    rng=random.default_rng(ChildSeeds[index]) #Create the (seeded) random generator
-    rng2=random.default_rng(ChildSeeds[index+1]) #Create a second (seeded) random generator
+    rng=random.default_rng(ChildSeeds[index]) #Create the (seeded) random generator.
+    rng2=random.default_rng(ChildSeeds[index+1]) #Create a second (seeded) random generator.
     i=0
-    Bound = 1+1/(2*Dimension) #The Copula marginal density is bounded by 1+1/(2d)
-    for d in range(1,Dimension): #Start at 1 first we already have done the first
-        Bound = Bound*(1+1/(2*Dimension))*(1+abs(CopulaParameter[d-1])) #Each dimension we multiple with a marginal bounded by 1.8 and a Copulafunction bounded by 1 + absolute value of the copulaparameter
+    Bound = 1+1/(2*Dimension) #The Copula marginal density is bounded by 1+1/(2d).
+    for d in range(1,Dimension): #Start at 1 first we already have done the first.
+        Bound = Bound*(1+1/(2*Dimension))*(1+abs(CopulaParameter[d-1])) #Each dimension we multiple with a marginal bounded by 1.8 and a Copulafunction bounded by 1 + absolute value of the copulaparameter.
     X = pd.DataFrame(dtype='float64')
     while i < NumberOfPoints:
-        T = rng.random(Dimension) #Draw sample from the uniform distribution on [0,1)^d
-        A = rng2.random(1) #Draw sample from the uniform distribution on [0,1)
+        T = rng.random(Dimension) #Draw sample from the uniform distribution on [0,1)^d.
+        A = rng2.random(1) #Draw sample from the uniform distribution on [0,1).
         if Bound*A<=CopulaDensityFunction(T,Dimension,CopulaParameter):
             AidFrame = pd.DataFrame([T])
             X = pd.concat([X,AidFrame], ignore_index = True, axis=0 )
@@ -400,7 +400,7 @@ def CopulaDensity(NumberOfPoints, Dimension ,ChildSeeds, Test: bool, SimulationN
 
 def CopulaTrueValues(Datapoints: pd.DataFrame, NumberOfPoints, Dimension, CopulaParameter):
     """
-    Function that provides the true values of the density for the testdata for the tree-shaped Bayesian network model
+    Function that provides the true values of the density for the testdata for the tree-shaped Bayesian network model.
     """
     Z = zeros(NumberOfPoints)
     for i in range(0, NumberOfPoints):
@@ -438,7 +438,7 @@ def GenerateRegressionDataFullDataMethod(DataPoints: pd.DataFrame, NumberOfPoint
 
 def GenerateTestDataGBM(NumberOfPoints, Dimension, ChildSeeds, SimulationNumber,f, Bound,ConditionalModel):
     """
-    Function to generate test data for the Naive Bayes model
+    Function to generate test data for the Naive Bayes model.
     """
     DataPoints = NaiveBayesGBMDensity(NumberOfPoints, Dimension, ChildSeeds, True, SimulationNumber, f, False, Bound,ConditionalModel)
     TrueValues = NaiveBayesGBMTrueValues(DataPoints, NumberOfPoints, Dimension, f,ConditionalModel)
@@ -446,7 +446,7 @@ def GenerateTestDataGBM(NumberOfPoints, Dimension, ChildSeeds, SimulationNumber,
 
 def GenerateTestDataBinaryTree(NumberOfPoints, Dimension, ChildSeeds, SimulationNumber,f, Bound,ConditionalModel):
     """
-    Function to generate test data for the tree-shaped Bayesian network model
+    Function to generate test data for the tree-shaped Bayesian network model.
     """
     DataPoints = BayesBinaryTreeDensity(NumberOfPoints, Dimension, ChildSeeds, True, SimulationNumber, f, False, Bound,ConditionalModel)
     TrueValues = BayesBinaryTreeTrueValues(DataPoints, NumberOfPoints, Dimension, f,ConditionalModel)
@@ -454,7 +454,7 @@ def GenerateTestDataBinaryTree(NumberOfPoints, Dimension, ChildSeeds, Simulation
 
 def GenerateTestDataCopula(NumberOfPoints, Dimension, ChildSeeds, SimulationNumber,CopulaParameter):
     """
-    Function to generate test data for the copula model
+    Function to generate test data for the copula model.
     """
     DataPoints = CopulaDensity(NumberOfPoints, Dimension, ChildSeeds, True, SimulationNumber, False,  CopulaParameter)
     TrueValues = CopulaTrueValues(DataPoints, NumberOfPoints, Dimension, CopulaParameter)
@@ -490,7 +490,7 @@ def GenerateData(Dimension, NumberOfPoints, SimulationNumber, ChildSeeds, TestDa
         endtestdatagen = time.time()
         testdatagentime =float(endtestdatagen-starttestdatagen)
         print("testdatageneration time:", testdatagentime )
-    return FullData, RegressionData, TestData, RegressionKDEBandwidth ,RegressionKDERunTime, RegressionDataFullDataMethod #Return the full generated data sample, the data sample prepared for use for the regression part and the test data
+    return FullData, RegressionData, TestData, RegressionKDEBandwidth ,RegressionKDERunTime, RegressionDataFullDataMethod #Return the full generated data sample, the data sample prepared for use for the regression part and the test data.
 
 def GenerateInitData(Dimension, NumberOfPoints, Index, ChildSeeds,Model,f, BoundGBM,ConditionalModel, CopulaParameter):
     """
@@ -507,7 +507,6 @@ def GenerateInitData(Dimension, NumberOfPoints, Index, ChildSeeds,Model,f, Bound
 ####################
 #KERNEL
 ####################
-#The construction of the Kernel estimate should come here
 
 
 def KernelEstimationRegression(EvaluationDatapoints, InputDataPoints, NumberOfInputPoints,Dimension, BandwidthConstantRegression):
@@ -539,10 +538,10 @@ def KernelEstimationProcedureKDEMethod(FullData, Dimension, Smoothness, NumberOf
 #NETWORK
 ####################
 
-#Function to check the bounds of parameters. Used to check if parameters are large and for checking if parameters are (very) close to 0
+#Function to check the bounds of parameters. Used to check if parameters are large and for checking if parameters are (very) close to 0.
 def CheckParameterBounds(Parameters, Bound):
     """
-    Function that counts how many parameters are greater than the given bound in absolute value
+    Function that counts how many parameters are greater than the given bound in absolute value.
     """
     Counter = 0
     for i in range (0, Parameters.size):
@@ -552,20 +551,20 @@ def CheckParameterBounds(Parameters, Bound):
             Counter = Counter+1
     return Counter
 
-#Function to setup the network
+#Function to setup the network.
 def setup_network(Layers, Width, InputDimension, X,Y):
     inputs = tf.keras.Input(shape=(InputDimension,))
     x = tf.keras.layers.Dense(Width, activation='relu', bias_initializer='glorot_uniform', kernel_initializer= 'glorot_uniform')(inputs)
     for layer in range(Layers-1):
         x = tf.keras.layers.Dense(Width, activation='relu', bias_initializer='glorot_uniform', kernel_initializer= 'glorot_uniform', kernel_regularizer=tf.keras.regularizers.L2(l2=1e-4))(x)
-    output = tf.keras.layers.Dense(1, activation=None, use_bias=False)(x) #Linear output with no bias in the output layer (This is how this network layer is defined in script)
+    output = tf.keras.layers.Dense(1, activation=None, use_bias=False)(x) #Linear output with no bias in the output layer (This is how this network layer is defined in script).
     network = tf.keras.Model(inputs, output)
     network.compile(optimizer = 'adam', loss= 'MSE')
-    network.fit(X,Y, epochs = 1, verbose=0 , batch_size=32) #Go through the data once to pre-train the network
+    network.fit(X,Y, epochs = 1, verbose=0 , batch_size=32) #Go through the data once to pre-train the network.
     return network
 
 
-#Function to construct and train the network
+#Function to construct and train the network.
 def NetworkTrainingMSE(Layers, Width, InputDimension, Data, NumberOfPoints, Sparsity):
     """
     Function that creates and trains a network using keras/tensorflow
@@ -574,11 +573,11 @@ def NetworkTrainingMSE(Layers, Width, InputDimension, Data, NumberOfPoints, Spar
     X = Data.iloc[:,:InputDimension]
     Y = Data.iloc[:,InputDimension]
     epochs = 20
-    end_step = NumberOfPoints*epochs #Continue the pruning (sparsity) for 20
+    end_step = NumberOfPoints*epochs #Continue the pruning (sparsity) for 20.
 
     base_network = setup_network(Layers, Width, InputDimension, X, Y)
     initial_sparsity = float32(0.25)
-    SparsityPercent = float32(1.0-(Sparsity/base_network.count_params())) #Sparsity in keras is defined as the number of zeroes
+    SparsityPercent = float32(1.0-(Sparsity/base_network.count_params())) #Sparsity in keras is defined as the number of zeroes.
 
     pruning_params = {'pruning_schedule': tfmotspar.keras.PolynomialDecay(initial_sparsity=initial_sparsity, final_sparsity=SparsityPercent, begin_step=0, end_step=end_step)}
 
@@ -598,10 +597,10 @@ def NetworkParameterStatistics(network, Layers):
     Function that extracts the information about large and small parameters from a trained network.
     """
     Parameters = zeros(0)
-    k=1 #Counter to count the layers, used to check if we are in the output layer
+    k=1 #Counter to count the layers, used to check if we are in the output layer.
     for layer in network.layers:
-        if 'input' not in layer.name: #Check that we are not the input layer as that layer does not have any parameters
-            if k == Layers: #Check if we are not the output layer, as that layer has no bias parameter
+        if 'input' not in layer.name: #Check that we are not the input layer as that layer does not have any parameters.
+            if k == Layers: #Check if we are not the output layer, as that layer has no bias parameter.
                 ParameterAid = layer.get_weights()
                 ParameterValue = concatenate((ParameterAid[0],ParameterAid[1]) ,axis=None)
             else:
@@ -628,7 +627,7 @@ def NetworkTrainingProcedure(Layers, Width, InputDimension, Data, NumberOfRepeat
     NonSmallParameterCount = zeros(NumberOfRepeats)
     NonVerySmallParameterCount = zeros(NumberOfRepeats)
     ParameterCount = zeros(NumberOfRepeats)
-    #Train the required NumberOfRepeats networks 
+    #Train the required NumberOfRepeats networks.
     for i in range(0,NumberOfRepeats):
         network, MSETrainingSet[i], ParameterCount[i] = NetworkTrainingMSE(Layers, Width, InputDimension, Data, NumberOfPoints, Sparsity)
         MSE[i] = network.evaluate(TestPoints,TestValues)
@@ -636,15 +635,15 @@ def NetworkTrainingProcedure(Layers, Width, InputDimension, Data, NumberOfRepeat
     NetworkStatistics = pd.DataFrame({'MSE': MSE[:], 'MSETrainingSet': MSETrainingSet[:] ,'LargeParameterCount': LargeParameterCount[:],'DoubleLargeParameterCount': DoubleLargeParameterCount[:] ,'NonSmallParameterCount': NonSmallParameterCount[:], 'NonVerySmallParameterCount': NonVerySmallParameterCount[:] ,'ParameterCount': ParameterCount[:]})
     end = time.time()
     RunTime= float(end-start)
-    return NetworkStatistics, RunTime #Return the statistics of the networks
+    return NetworkStatistics, RunTime #Return the statistics of the networks.
 
 ####################
 #CALCULATIONS
 ####################
-#Functions that do basic calculation should be placed here
+
 def AltScore(estimator, X):
     """
-    Scoring function to get rid of the -inf values in the grid-search by replacing them by something still very negative but finite
+    Scoring function to get rid of the -inf values in the grid-search by replacing them by something still very negative but finite.
     """
     Score = estimator.score_samples(X)
     Score[Score == float('-inf')] = -1e10
@@ -660,32 +659,32 @@ def MSECalculation(PredictedValues, TrueValues, SampleSize):
     mse = mse/SampleSize
     return mse
 
-#Function to calculate the bound on the generated GBM functions
+#Function to calculate the bound on the generated GBM functions.
 def BoundCalculation(f, Steps):
     """
     Function to find the maximum of the generated GBM.
     """
-    EstimatedMax = 0.0 #Function will be used to estimate the max of a density (used for setting the rejection sampling bound) so max will be >0
+    EstimatedMax = 0.0 #Function will be used to estimate the max of a density (used for setting the rejection sampling bound) so max will be >0.
     Points = 2*Steps
     for i in range(0,Points+1):
         Aid = f(i/(Points+1))
         if Aid >= EstimatedMax:
             EstimatedMax = Aid
-    Bound = EstimatedMax + 0.1 #Add a margin for safety
+    Bound = EstimatedMax + 0.1 #Add a margin for safety.
     return Bound
-    #We do not need to calculate the bounds for the conditional distributions based on the GBMs as they are the same as the marginal version (mixing with a mirrored version and shifting do not affect the bound) 
+    #We do not need to calculate the bounds for the conditional distributions based on the GBMs as they are the same as the marginal version (mixing with a mirrored version and shifting do not affect the bound).
 
 ####################
 #SAVE AND IMPORT
 ####################
 
-#Function to store the results of the simulation
+#Function to store the results of the simulation.
 def SaveReport(Model, ConditionalModel, SimulationNumber, Seed, NumberOfPoints,TestPoints, Smoothness, Dimension ,KDERunTime, NetworkRunTime,  Repeats,layers,width, KDEMSE, NetworkStatistics, NetworkStatisticsFullDataMethod, mseKDERegression, mseKDERegressionFullData,  mseZeroEstimator, KDEOptimalBandwidth, RegressionKDEBandwidth, RegressionKDEBandwidthFullData, RegressionKDERunTime, BandwidthConstant, BandwidthConstantRegression, BrownianMotionSteps, SparsityTA, SparsityFA):
     """
     This function collects all the information, puts it in a pandas dataframe and writes it to a .csv file.
     """
-    #Get the relevant data from the NetworkStatistics DataFrame
-    ParameterCount = NetworkStatistics.iloc[0,6] #Parameter count is the same across all the networks
+    #Get the relevant data from the NetworkStatistics DataFrame.
+    ParameterCount = NetworkStatistics.iloc[0,6] #Parameter count is the same across all the networks.
     AverageNetworkMSE = average(NetworkStatistics.loc[:,'MSE'].values)
     AverageNetworkNonSmallParameters =  average(NetworkStatistics.loc[:,'NonSmallParameterCount'].values)
     AverageNetworkNonVerySmallParameters =  average(NetworkStatistics.loc[:,'NonVerySmallParameterCount'].values)
@@ -708,7 +707,7 @@ def SaveReport(Model, ConditionalModel, SimulationNumber, Seed, NumberOfPoints,T
     BestTrainingNetworkTrainingError = NetworkStatistics.iloc[0,1]
 
 
-    #Get the relevant data from the NetworkStatisticsFullDataMethod
+    #Get the relevant data from the NetworkStatisticsFullDataMethod.
     AverageNetworkMSEFullDataMethod = average(NetworkStatisticsFullDataMethod.loc[:,'MSE'].values)
     AverageNetworkNonSmallParametersFullDataMethod =  average(NetworkStatisticsFullDataMethod.loc[:,'NonSmallParameterCount'].values)
     AverageNetworkNonVerySmallParametersFullDataMethod =  average(NetworkStatisticsFullDataMethod.loc[:,'NonVerySmallParameterCount'].values)
@@ -779,7 +778,7 @@ def InitGBM(ChildSeeds, Steps, Initial, Dimension, ConditionalModel):
     Bound1 = BoundCalculation(f1, Steps)
     Bound = array([Bound1])
     for d in range (1, Dimension):
-        if d%3 > 0: #Use inequality here to allow to increase the number of nearunif densities that we use (if we change to == then we can decrease the number of nearunif densities we use)
+        if d%3 > 0: 
             faid = NearUnifDensity(Dimension)
         else:
             GBMPath = GBMPathGeneration(Steps, Initial, ChildSeeds[index+d])
@@ -793,7 +792,7 @@ def InitGBM(ChildSeeds, Steps, Initial, Dimension, ConditionalModel):
     print(Bound)
     return f, Bound
 
-#Function to initiliaze the bandwidthconstant. We take the average of the cross-validation result on 5 data-sets of 200 points each (as 200 points is the minimum n we plan to run the simulation with)
+#Function to initiliaze the bandwidthconstant. We take the average of the cross-validation result on 5 data-sets of 200 points each (as 200 points is the minimum n we plan to run the simulation with).
 def InitializeBandwidth(Model, Dimension, Smoothness, ChildSeeds, f, BoundGBM, ConditionalModel, CopulaParameter):
     """
     Function to determine the bandwidth constant for each model. It takes the average of 5 cross-validation procedures on 5 newly generated data-sets of size 200.
@@ -821,57 +820,57 @@ def Mainsimulation():
     The main function. The definitions of which model and other constants are defined here.
     """
     
-    #Specify which model to use. Should be one of: 'NaiveBayesGBM', 'BayesBinaryTree', 'Copula' 
+    #Specify which model to use. Should be one of: 'NaiveBayesGBM', 'BayesBinaryTree', 'Copula' .
     Model = 'BayesBinaryTree' 
-    #Specify which conditional densities to use. Should be one of: 'Mixing', 'Shifting'. This has no effect on the Copula model
+    #Specify which conditional densities to use. Should be one of: 'Mixing', 'Shifting'. This has no effect on the Copula model.
     ConditionalModel = 'Shifting'
-    #Defintion of the constants
+    #Defintion of the constants.
     n = 200 #Keep even at all times, as this quantity corresponds to 2n in the script.
-    TestDataNumber = 100000 #Number of test data points, these are only used for checking the perfomance of the methods
-    Dimension = 4 #Dimension of the input. Code as allows for dimensions from 2 to (and including) 24 (dimension 1 should work also)
-    Smoothness = 0.5 #The Copula model is defined for 0.5. A true GBM-path has smoothness <0.5 
+    TestDataNumber = 100000 #Number of test data points, these are only used for checking the perfomance of the methods.
+    Dimension = 4 #Dimension of the input. Code as allows for dimensions from 2 to (and including) 24.
+    Smoothness = 0.5 #The Copula model is defined for 0.5. A true GBM-path has smoothness <0.5.
     
-    layers = max(1,int(ceil(log(n)/log(2)))) #Number of layers in the DNN
-    width = min(1000,int(ceil(n**(1/(2*Smoothness+1))))) #Number of neurons in each layer of the DNN, the width is capped at 1000 to prevent the networks to become to large for the memory  
+    layers = max(1,int(ceil(log(n)/log(2)))) #Number of layers in the DNN.
+    width = min(1000,int(ceil(n**(1/(2*Smoothness+1))))) #Number of neurons in each layer of the DNN, the width is capped at 1000 to prevent the networks to become to large for the memory.  
     
-    SparsityTA = 2*(n/2)*log(n/2)*((n/2)**(-(2*Smoothness)/(2*Smoothness+1))) #Added the multiplicative constant 2 to make it less likely that the network is too sparse
-    SparsityFA = (2*n)*log(n)*(n**(-(2*Smoothness)/(2*Smoothness+1))) #Added the multiplicative constant 2 to make it less likely that the network is too sparse
+    SparsityTA = 2*(n/2)*log(n/2)*((n/2)**(-(2*Smoothness)/(2*Smoothness+1))) #Added the multiplicative constant 2 to make it less likely that the network is too sparse.
+    SparsityFA = (2*n)*log(n)*(n**(-(2*Smoothness)/(2*Smoothness+1))) #Added the multiplicative constant 2 to make it less likely that the network is too sparse.
     SimulationNumber = 1 #Number to keep track which simulation of the data set this is. This number can be 1,2,3,4,5.
-    NumberOfRepeats = 50 #Number of networks per networkmethod that we train on the data
+    NumberOfRepeats = 50 #Number of networks per networkmethod that we train on the data.
 
-    #Number of time steps in the generation of the Brownian Motion path, set to 2^(k) for some integer k (so that together with the initial value we have 2^k+1 points) so we can use the integrate.romb functio
+    #Number of time steps in the generation of the Brownian Motion path, set to 2^(k) for some integer k (so that together with the initial value we have 2^k+1 points) so we can use the integrate.romb function.
     k = 21
     BrownianMotionSteps = int(2**k) 
 
-    Initial = 0 #Initial value for the BM-path generation
+    Initial = 0 #Initial value for the BM-path generation.
     
-    #Parameter for the CopulaFamily
-    CopulaParameter = ones(Dimension-1) #We need one binary copula less than the number of dimensions we have
+    #Parameter for the CopulaFamily.
+    CopulaParameter = ones(Dimension-1) #We need one binary copula less than the number of dimensions we have.
     for i in range (0,Dimension-1):
         CopulaParameter[i]= -1+(2*i)/(Dimension-2)
         if CopulaParameter[i] == 0.0:
-            CopulaParameter[i] = 0.01 #if we the parameter is euqal to zero we get the independence copula which we avoid in this way
+            CopulaParameter[i] = 0.01 #if we the parameter is euqal to zero we get the independence copula which we avoid in this way.
 
-    # get the version of TensorFlow
+    # get the version of TensorFlow.
     print("TensorFlow version: {}".format(tf.__version__))
 
-    # Check that TensorFlow was build with CUDA to use the gpus
+    # Check that TensorFlow was build with CUDA to use the gpus.
     print("Device name: {}".format(tf.test.gpu_device_name()))
     print("Build with GPU Support? {}".format(tf.test.is_built_with_gpu_support()))
     print("Build with CUDA? {} ".format(tf.test.is_built_with_cuda()))
 
-    #Create sequences of seeds from one seed (to make the results reproducible and to ensure that the (pseudo)-random generation in various functions is not too related)
+    #Create sequences of seeds from one seed (to make the results reproducible and to ensure that the (pseudo)-random generation in various functions is not too related).
     Seed = 15252
     SequenceSeeder = random.SeedSequence(Seed)
     ChildSeeds = SequenceSeeder.spawn(5000) #The childseeds are used in the following way: 1000 seeds are reserved for each model. For each simulationnumber there are then 100 seeds. The first 50 for generating the test data, the last 50 for generating the (training) data. The second 500 of each 1000 are used for initialising the bandwithconstant. The first 25 seeds are for the generation of the brownian motion path.
-    #Seeds given away so far:
+    #Seeds used:
     #0-24 GBM Paths
     #1000-1999 Copula Model 
     #2000-2999 NaiveBayesGBM Model
     #3000-3999 BayesBinaryTree Model 
 
 
-    #Initilization functions
+    #Initilization functions.
     start_time = time.time()
     if Model == 'Copula':
         f = zeros(Dimension) #We do not use the GBM paths (and their bounds) in the copula model, so we do not need to initialize them.
@@ -880,16 +879,16 @@ def Mainsimulation():
         f, BoundGBM = InitGBM(ChildSeeds, BrownianMotionSteps, Initial, Dimension, ConditionalModel)
     BandwidthConstant, BandwidthConstantRegression = InitializeBandwidth(Model, Dimension, Smoothness, ChildSeeds, f, BoundGBM, ConditionalModel, CopulaParameter)
 
-    #Create data
+    #Create data.
     FullData, RegressionData, TestData, RegressionKDEBandwidth, RegressionKDERunTime, RegressionDataFullDataMethod= GenerateData(Dimension, n, SimulationNumber, ChildSeeds, TestDataNumber, f, Model, BandwidthConstantRegression, BoundGBM,ConditionalModel,CopulaParameter) 
-    #Store the testpoints without the density values, used by KDE and network to generate estimations of the density (and to compare those with the true density value)
+    #Store the testpoints without the density values, used by KDE and network to generate estimations of the density (and to compare those with the true density value).
     TestPoints = TestData.drop(labels = 'Z',axis = 'columns')
     TestValues = TestData["Z"]
     TestValues =TestValues.to_frame()
 
 
 
-    #Get the MSE for the KDE used for the regression
+    #Get the MSE for the KDE used for the regression.
     splitvalue = int(n/2)
     X = FullData.iloc[:splitvalue,:]
     KDERegression, RegressionKDEBandwidthControlVersion = KernelEstimationRegression(TestPoints,X, splitvalue, Dimension, BandwidthConstantRegression )
@@ -897,24 +896,24 @@ def Mainsimulation():
     KDERegressionFullData, RegressionKDEBandwidthFullData = KernelEstimationRegression(TestPoints,FullData, n, Dimension, BandwidthConstantRegression)
     mseKDERegressionFullData = MSECalculation(KDERegressionFullData,TestValues,TestDataNumber)   
     print("Data-generation and kernel estimation running time: {0:1f}s".format(time.time()-start_time))
-    #Train the networks
-    #Theoretical method
+    #Train the networks.
+    #Theoretical method.
     NetworkStatistics, NetworkRunTime = NetworkTrainingProcedure(layers,width,Dimension,RegressionData,NumberOfRepeats ,TestPoints,TestValues, int(n/2), SparsityTA)
-    #Full data method
+    #Full data method.
     NetworkStatisticsFullDataMethod, NetworkRunTimeFullDataMethod = NetworkTrainingProcedure(layers,width,Dimension,RegressionDataFullDataMethod,NumberOfRepeats ,TestPoints,TestValues, n, SparsityFA)
 
 
-    #Calculate the KDE with theoretical optimal bandwidth
+    #Calculate the KDE with theoretical optimal bandwidth.
     KDEtest, KDEOptimalBandwidth, KDERunTime = KernelEstimationProcedureKDEMethod(FullData, Dimension, Smoothness,n, TestPoints,  BandwidthConstant)
 
-    #Calculate the MSE based on the Testdata for the KDE with optimal bandwidth
+    #Calculate the MSE based on the Testdata for the KDE with optimal bandwidth.
     mseKernel = MSECalculation(KDEtest,TestValues,TestDataNumber)
     
-    #Score the MSE of the estimator that always give back zero to give a baseline to compare with
+    #Score the MSE of the estimator that always give back zero to give a baseline to compare with.
     ZeroEstimator = pd.DataFrame({'Z': zeros(TestDataNumber)})
     mseZeroEstimate = MSECalculation(ZeroEstimator, TestValues, TestDataNumber)
 
-    #Store the results in a file
+    #Store the results in a file.
     SaveReport(Model, ConditionalModel, SimulationNumber, Seed, n, TestDataNumber, Smoothness, Dimension ,KDERunTime, NetworkRunTime, NumberOfRepeats, layers, width,mseKernel,NetworkStatistics, NetworkStatisticsFullDataMethod, mseKDERegression, mseKDERegressionFullData ,mseZeroEstimate, KDEOptimalBandwidth, RegressionKDEBandwidth, RegressionKDEBandwidthFullData ,  RegressionKDERunTime, BandwidthConstant, BandwidthConstantRegression, BrownianMotionSteps, SparsityTA, SparsityFA)
     print("Total running time: {0:1f}s".format(time.time()-start_time))
     
