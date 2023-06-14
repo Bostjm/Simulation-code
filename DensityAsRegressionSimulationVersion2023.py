@@ -760,8 +760,9 @@ def SaveReport(Model, ConditionalModel, SimulationNumber, Seed, NumberOfPoints,T
                              
                              'Timestamp': [time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())] })
     timemark = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-    Report.to_csv("./outputdata/SimulationReport{}.csv".format(timemark),index=False, encoding='utf8') #Simplified storage for use on ALICE
-
+    Report.to_csv("./outputdata/SimulationReport{}.csv".format(timemark),index=False, encoding='utf8') 
+    NetworkStatistics.to_csv("./outputdata/SimulationNetworkSplitData{}.csv".format(timemark),index=False, encoding='utf8') 
+    NetworkStatisticsFullDataMethod.to_csv("./outputdata/SimulationNetworkFullData{}.csv".format(timemark),index=False, encoding='utf8') 
 
 ####################
 #INITIALIZATION FUNCTION
